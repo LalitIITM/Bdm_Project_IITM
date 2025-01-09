@@ -43,8 +43,7 @@ def load_or_build_vector_store(directory,supabase_client, embedder):
             logger.warning("No documents found in the directory. Vector store not created.")
             return None
         logger.info(f"Document texts extracted for vector store are of length {len(document_texts)}")
-        store_embeddings_in_supabase(supabase_client, document_texts, embedder)
-        logger.info(f"Embeddings stored in supabase")
+        
         vector_store = create_vector_store(document_texts)
         vector_store.save_local(VECTOR_STORE_PATH)
         return vector_store

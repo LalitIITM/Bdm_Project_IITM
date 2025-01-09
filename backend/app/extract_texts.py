@@ -14,7 +14,21 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 logger = logging.getLogger(__name__)
 
 def clean_text(text):
-    # Replace multiple spaces with a single space
+    
+    """
+    Clean text by replacing multiple spaces with a single space, fixing words broken by line breaks, 
+    fixing punctuation followed by words with no space, standardizing newlines, and performing additional cleanup.
+
+    Parameters
+    ----------
+    text : str
+        Input text to be cleaned.
+
+    Returns
+    -------
+    str
+        Cleaned text.
+    """
     text = re.sub(r'\s+', ' ', text)
     # Fix words broken by line breaks or formatting
     text = re.sub(r'(?<=[a-zA-Z])(?=[A-Z])', ' ', text)  # Add space between words when they are stuck together    
@@ -27,7 +41,7 @@ def clean_text(text):
     text = text.strip()  # Remove leading and trailing whitespace
     return text
 
-def load_hidden_documents(directory="hidden_docs"):
+def load_hidden_documents(directory):
     """Load all supported file types from a directory and return their content."""
     all_texts = []
 
@@ -76,10 +90,12 @@ def load_hidden_documents(directory="hidden_docs"):
 
             # Handle ZIP files (.zip)
             elif filename.endswith(".zip"):
-                with ZipFile(file_path, 'r') as zip_ref:
-                    temp_dir = "temp_extracted"
-                    zip_ref.extractall(temp_dir)
-                    all_texts.extend(load_hidden_documents(temp_dir))
+                temp_dir = "temp_extracted"
+                try:
+                    with ZipFile(file_path, 'r') as zip_ref:
+                        zip_ref.extractall(temp_dir)
+                        all_texts.extend(load_hidden_documents(temp_dir))
+                finally:
                     shutil.rmtree(temp_dir)  # Clean up temporary directory
                 logger.info(f"Processed ZIP file: {filename}")
 

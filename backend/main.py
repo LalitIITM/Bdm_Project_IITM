@@ -5,10 +5,13 @@ from flask import Flask, request, jsonify
 from dotenv import load_dotenv
 from supabase import create_client, Client
 from langchain_groq import ChatGroq
-from app.vector_store import reload_vector_store_if_needed
+from app.vector_store import reload_vector_store_if_needed, embedder
 from app.chat import is_valid_email, process_user_input
 from langchain.chains import ConversationalRetrievalChain
-from app.extract_texts import logger
+from app.extract_texts import logger,load_hidden_documents
+from app.embeddings import store_embeddings_in_supabase
+
+
 
 directory = "hidden_docs"
 # Load environment variables from .env file
@@ -29,6 +32,10 @@ def load_model():
     
 model = load_model()
 supabase: Client = create_client(url, key)
+
+clean_texts = load_hidden_documents(directory)
+store_embeddings_in_supabase(supabase, clean_texts, embedder)
+logger.info(f"Embeddings stored in supabase")
 
 # Reload vector store if needed
 vector_store = reload_vector_store_if_needed(directory, supabase)
