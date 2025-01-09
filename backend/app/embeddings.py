@@ -22,11 +22,11 @@ def store_embeddings_in_supabase(supabase_client, cleaned_texts, embedder):
         embedding = embedder.embed_documents([text])[0]
         data = {
             "text": text,
-            "embedding": embedding.tolist(),  # Convert numpy array to list for JSON serialization
+            "embedding": embedding,  
             "hash": text_hash
         }
         response = supabase_client.table("embeddings").insert(data).execute()
-        if response.status_code == 201:
+        if response:
             logger.info(f"Successfully stored embedding for text: {text[:30]}...")
         else:
             logger.error(f"Failed to store embedding for text: {text[:30]}... | Response: {response}")

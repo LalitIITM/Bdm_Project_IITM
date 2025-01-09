@@ -61,7 +61,7 @@ def validate_email():
         logger.error(f"Error in validate_email: {e}")
         return jsonify({"status": "error", "message": "An error occurred during email validation."})
 
-@app.route('/ask_question', methods=['POST'])
+@app.route('/chat', methods=['POST'])
 def ask_question():
     try:
         email = request.json['email']  
