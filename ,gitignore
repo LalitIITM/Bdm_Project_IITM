@@ -1,0 +1,8 @@
+# Ignore environment variables file
+backend/.env
+
+# Ignore hidden documents directory
+backend/hidden_docs/
+
+# Ignore virtual environment directory
+backend/.venv/

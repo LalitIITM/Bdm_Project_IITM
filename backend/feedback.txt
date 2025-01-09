@@ -1,0 +1,111 @@
+### **File: extract_text.py** ###
+
+**Review:**
+1. **Logging Setup:**
+   - Logging is correctly set up with appropriate log levels.
+   - The logger is used correctly to log successful processing and errors.
+
+2. **Functionality:**
+   - `clean_text` function: Good approach for text cleaning (handling extra spaces, broken words, punctuation issues, etc.).
+   - `load_hidden_documents` function:
+     - Handles multiple file types: PDF, DOCX, TXT, CSV, PPTX, ZIP.
+     - The fallback for unknown file types using MIME type is a good idea.
+     - Recursive handling of ZIP files is correct and includes temporary directory cleanup.
+   
+3. **Potential Issues:**
+   - **Edge Case Handling:** If the directory contains unsupported file types (e.g., images), it skips them silently without logging.
+     **Suggestion:** Add a log message for unsupported file types.
+   - **Efficiency:** Currently, documents are loaded in memory as full text. For large documents, this may cause memory issues.
+     **Suggestion:** Consider chunking the text before appending to `all_texts`.
+
+---
+
+### **File: tokens.py** ###
+
+**Review:**
+1. `count_tokens` function:
+   - Uses `tiktoken` correctly to count tokens.
+   - Logs token count and handles errors properly.
+
+2. Potential improvement:
+   - You may want to allow for different encoding models (e.g., pass the model name as a parameter).
+
+---
+
+### **File: vector_store.py** ###
+
+**Review:**
+1. **Correctness:**
+   - The use of FAISS for vector store creation and loading is correct.
+   - Proper use of thread locks to ensure thread safety.
+
+2. **Potential Issues:**
+   - **Function `reload_vector_store_if_needed`:** Calls `load_or_build_vector_store` without passing required parameters (`directory`, `supabase_client`, etc.).
+     **Fix:** Ensure all required parameters are passed when calling this function.
+   
+3. **Improvement:**
+   - Instead of storing `file_mod_times` only in memory, consider saving it in a persistent file to avoid rebuilding the vector store on every restart.
+
+---
+
+### **File: chat.py** ###
+
+**Review:**
+1. **Functionality:**
+   - `is_valid_email`: Regex is correctly designed for validating email addresses.
+   - `find_similar_question`: Uses TF-IDF and cosine similarity correctly to find similar questions.
+   - `process_user_input`:
+     - Handles user input, session timeout, and Supabase saving correctly.
+     - Good use of logging for tracking input and responses.
+
+2. **Potential Issues:**
+   - **Performance:**
+     - Using TF-IDF for similarity search may not scale well with large chat histories.
+       **Suggestion:** Consider using a more scalable embedding-based approach.
+   - **Error Handling:** In `save_session_to_supabase`, it logs an error if saving fails but still returns `True`. This may cause confusion.
+     **Fix:** Return `False` if the response indicates failure.
+
+---
+
+### **File: main.py** ###
+
+**Review:**
+1. **Environment Variables:**
+   - Correctly uses `dotenv` to load environment variables.
+
+2. **Model Loading:**
+   - The `ChatGroq` model is loaded with appropriate error handling.
+
+3. **Flask Endpoints:**
+   - `/validate_email`: Validates email correctly.
+   - `/ask_question`: Processes user input and returns chatbot response.
+   - `/get_token_count_from_input`: Returns token count for a given input.
+
+4. **Potential Issues:**
+   - **Endpoint Error Handling:** Inconsistent error handling in Flask routes.
+     - Some routes catch exceptions and return error responses, but they don’t include the actual error message in the response.
+       **Suggestion:** Include the exception message in the response for easier debugging.
+
+5. **Improvement:**
+   - **Debug Mode:** Running Flask in debug mode (`debug=True`) should only be used in development. For production, set `debug=False`.
+
+---
+
+### **Overall Recommendations:**
+1. **Code Consistency:**
+   - Ensure functions in `vector_store.py` consistently pass required parameters.
+
+2. **Scalability:**
+   - Consider replacing TF-IDF in `find_similar_question` with a more scalable embedding-based approach (e.g., using the same FAISS vector store).
+
+3. **Logging:**
+   - Add more logs for unsupported file types in `extract_text.py`.
+   - Include exception details in error responses for easier debugging.
+
+4. **Persistent Storage:**
+   - Store `file_mod_times` persistently to avoid unnecessary vector store rebuilding.
+
+5. **Deployment:**
+   - Set Flask `debug` mode to `False` for production.
+
+This code is well-structured, with appropriate use of external libraries and clear logging throughout. Addressing the mentioned issues will further enhance its robustness and scalability.
