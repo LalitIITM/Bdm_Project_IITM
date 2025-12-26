@@ -10,6 +10,7 @@ from app.chat import is_valid_email, process_user_input
 from langchain.chains import ConversationalRetrievalChain
 from app.extract_texts import logger,load_hidden_documents
 from app.embeddings import store_embeddings_in_supabase
+from app.agents.agentic_rag import create_agentic_rag
 
 
 
@@ -44,6 +45,10 @@ if vector_store is None:
 
 # Create retrieval chain
 retrieval_chain = ConversationalRetrievalChain.from_llm(model, retriever=vector_store.as_retriever())
+
+# Initialize Agentic RAG System
+agentic_rag = create_agentic_rag(vector_store, model, enable_agents=True)
+logger.info("Agentic RAG system initialized")
 # Initialize Flask app
 app = Flask(__name__)
 
@@ -95,6 +100,56 @@ def get_token_count_from_input():
     except Exception as e:
         logger.error(f"Error in get_token_count_from_input: {e}")
         return jsonify({"status": "error", "message": "An error occurred while counting tokens."})
+
+@app.route('/agentic_chat', methods=['POST'])
+def agentic_chat():
+    """
+    New endpoint for agentic RAG chat with enhanced reasoning capabilities.
+    """
+    try:
+        email = request.json['email']
+        name = request.json.get('name', '')
+        user_input = request.json['question']
+        chat_history = request.json.get('chat_history', [])
+        strategy = request.json.get('strategy', 'adaptive')  # sequential, parallel, or adaptive
+        
+        logger.info(f"Agentic chat request: {user_input} from {email} with strategy {strategy}")
+        
+        # Process with agentic RAG
+        result = agentic_rag.query(user_input, chat_history, strategy)
+        
+        # Save to database if needed (similar to regular chat)
+        if user_input.lower() == "stop":
+            from app.chat import save_session_to_supabase
+            save_session_to_supabase(supabase, email, name, chat_history)
+        
+        logger.info(f"Agentic chat processed successfully")
+        return jsonify({
+            "status": "success",
+            "answer": result.get("answer", ""),
+            "metadata": {
+                "agents_used": result.get("agents_used", []),
+                "retrieval_count": result.get("retrieval_count", 0),
+                "reasoning_strategy": result.get("reasoning_strategy", ""),
+                "orchestration": result.get("orchestration", "")
+            }
+        })
+        
+    except Exception as e:
+        logger.error(f"Error in agentic_chat: {e}")
+        return jsonify({"status": "error", "message": "An error occurred while processing the agentic chat."})
+
+@app.route('/agentic_stats', methods=['GET'])
+def agentic_stats():
+    """
+    Get statistics about the agentic RAG system.
+    """
+    try:
+        stats = agentic_rag.get_stats()
+        return jsonify({"status": "success", "stats": stats})
+    except Exception as e:
+        logger.error(f"Error getting agentic stats: {e}")
+        return jsonify({"status": "error", "message": "Failed to retrieve stats."})
 
 if __name__ == '__main__':
     logger.info("Starting app...")

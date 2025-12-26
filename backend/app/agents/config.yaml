@@ -1,0 +1,75 @@
+# Agentic RAG Configuration
+
+## System Configuration
+
+# Enable or disable agentic features
+ENABLE_AGENTS = true
+
+# Default orchestration strategy
+# Options: sequential, parallel, adaptive
+DEFAULT_ORCHESTRATION_STRATEGY = adaptive
+
+## Agent Configuration
+
+### Retrieval Agent
+RETRIEVAL_STRATEGY = similarity  # Options: similarity, mmr
+RETRIEVAL_K_DEFAULT = 5
+RETRIEVAL_K_COMPLEX = 7
+RETRIEVAL_K_SIMPLE = 4
+
+### Reasoning Agent
+REASONING_TEMPERATURE = 0.7  # 0.0-1.0, higher = more creative
+REASONING_MAX_TOKENS = 500
+QUERY_COMPLEXITY_THRESHOLD = 15  # words
+
+## Memory Configuration
+AGENT_MEMORY_LIMIT = 100  # entries per agent
+ORCHESTRATOR_HISTORY_LIMIT = 1000  # execution records
+
+## Tool Configuration
+ENABLE_CALCULATION_TOOL = true
+ENABLE_TEXT_ANALYSIS_TOOLS = true
+MAX_TOOL_EXECUTION_TIME = 5  # seconds
+
+## Performance Configuration
+ENABLE_CACHING = true
+CACHE_TTL = 3600  # seconds
+SIMILARITY_THRESHOLD = 0.8  # for finding similar questions
+
+## Logging Configuration
+LOG_LEVEL = INFO  # DEBUG, INFO, WARNING, ERROR
+LOG_AGENT_ACTIONS = true
+LOG_TOOL_USAGE = true
+LOG_ORCHESTRATION = true
+
+## Model Configuration
+MODEL_NAME = llama3-8b-8192
+MODEL_TEMPERATURE = 0.8
+MODEL_MAX_RETRIES = 3
+MODEL_TIMEOUT = 30  # seconds
+
+## Vector Store Configuration
+VECTOR_STORE_TYPE = faiss
+EMBEDDING_MODEL = sentence-transformers/all-MiniLM-L6-v2
+VECTOR_STORE_PATH = faiss_index
+
+## Query Classification Thresholds
+FACTUAL_CONFIDENCE = 0.7
+COMPARISON_CONFIDENCE = 0.7
+ANALYSIS_CONFIDENCE = 0.6
+
+## Multi-step Reasoning Configuration
+ENABLE_MULTI_STEP = true
+MAX_REASONING_STEPS = 4
+REASONING_STEP_TIMEOUT = 10  # seconds per step
+
+## Error Handling
+FALLBACK_TO_SIMPLE_RAG = true
+MAX_RETRIES = 2
+RETRY_DELAY = 1  # seconds
+
+## Feature Flags
+ENABLE_DIVERSE_RETRIEVAL = true  # MMR
+ENABLE_QUERY_DECOMPOSITION = true
+ENABLE_ANSWER_VERIFICATION = false  # future feature
+ENABLE_SELF_REFLECTION = false  # future feature
